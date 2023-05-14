@@ -4,11 +4,13 @@ import com.example.FirstSecurity.services.PersonDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 @Configuration
@@ -21,26 +23,39 @@ public class SecurityConfig {
         this.personDetailsService = personDetailsService;
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(personDetailsService);
-    }
-
     @Bean
-    public PasswordEncoder getPasswordEncoder() {
+    PasswordEncoder getPasswordEncoder(){
         return NoOpPasswordEncoder.getInstance();
     }
-
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .requestMatchers("/resources/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
+        auth.userDetailsService(personDetailsService);
+        AuthenticationManager authenticationManager = auth.build();
+        http
+                .csrf()
+                .disable()
+                .authenticationManager(authenticationManager)
+                .authorizeHttpRequests()
+                .requestMatchers("/auth/login","/auth/registration","/error").permitAll()
+//                .requestMatchers("/hello").hasRole("ADMIN")
+//                .requestMatchers("/show").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                .and()
-                .logout()
-                .permitAll();
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/process_login")
+                .defaultSuccessUrl("/show",true)
+                .failureUrl("/auth/login?error");
+        return http.build();
     }
+
+//    protected void configure(HttpSecurity http) throws Exception {
+//
+//        http.authorizeRequests()
+//                .formLogin()
+//                .and()
+//                .logout()
+//                .permitAll();
+//    }
 }
