@@ -3,6 +3,7 @@ package com.example.FirstSecurity.services;
 import com.example.FirstSecurity.entities.Person;
 import com.example.FirstSecurity.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,10 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PersonService {
     private final PersonRepository personRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Autowired
-    public PersonService(PersonRepository personRepository) {
+    public PersonService(PersonRepository personRepository, PasswordEncoder passwordEncoder) {
         this.personRepository = personRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public boolean checkIfPersonExist(String username){
@@ -22,6 +26,7 @@ public class PersonService {
 
     @Transactional
     public void addPerson(Person person){
+       person.setPassword(passwordEncoder.encode(person.getPassword()));
         System.out.println("Saving");
         personRepository.save(person);
     }
