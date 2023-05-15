@@ -33,14 +33,11 @@ public class SecurityConfig {
         auth.userDetailsService(personDetailsService).passwordEncoder(getPasswordEncoder());
         AuthenticationManager authenticationManager = auth.build();
         http
-                .csrf()
-                .disable()
                 .authenticationManager(authenticationManager)
                 .authorizeHttpRequests()
                 .requestMatchers("/auth/login","/auth/registration","/error").permitAll()
-//                .requestMatchers("/hello").hasRole("ADMIN")
-//                .requestMatchers("/show").hasAnyRole("USER", "ADMIN")
-                .anyRequest().authenticated()
+                .anyRequest()
+                .authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/auth/login")
