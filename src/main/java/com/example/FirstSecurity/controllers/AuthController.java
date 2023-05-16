@@ -24,7 +24,6 @@ public class AuthController {
         this.personValidator = personValidator;
         this.personService = personService;
     }
-
     @GetMapping("/login")
     public String loginPage(){
         return "auth/login";

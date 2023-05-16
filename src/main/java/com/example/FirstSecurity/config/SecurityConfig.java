@@ -22,7 +22,6 @@ public class SecurityConfig {
     public SecurityConfig(PersonDetailsService personDetailsService) {
         this.personDetailsService = personDetailsService;
     }
-
     @Bean
     PasswordEncoder getPasswordEncoder(){
         return new BCryptPasswordEncoder();
@@ -35,9 +34,9 @@ public class SecurityConfig {
         http
                 .authenticationManager(authenticationManager)
                 .authorizeHttpRequests()
+                .requestMatchers("/admin").hasRole("ADMIN")
                 .requestMatchers("/auth/login","/auth/registration","/error").permitAll()
-                .anyRequest()
-                .authenticated()
+                .anyRequest().hasAnyRole("USER","ADMIN")
                 .and()
                 .formLogin()
                 .loginPage("/auth/login")
@@ -50,13 +49,4 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/auth/login");
         return http.build();
     }
-
-//    protected void configure(HttpSecurity http) throws Exception {
-//
-//        http.authorizeRequests()
-//                .formLogin()
-//                .and()
-//                .logout()
-//                .permitAll();
-//    }
 }
